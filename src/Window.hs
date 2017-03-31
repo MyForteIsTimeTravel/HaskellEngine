@@ -1,37 +1,32 @@
 --------------------------------------------------------------
 --------------------------------------------------------------
 --
---  http://andrew.gibiansky.com/blog/haskell/haskell-gloss/
---
---  Graphics and Simulation in haskell
---  Ryan Needham
+--  HaskellEngine
+--  MyForteIsTimeTravel
 --
 --------------------------------------------------------------
 --------------------------------------------------------------
-module Window (width, height, window, background) where
+module Window (fps, width, height, window, background) where
+
+-------------------------------------
+-- Window Data
+-------------------------------------
 
 import Graphics.Gloss
 
 -------------------------------------
--- Init Window
+-- | window parameters
 -------------------------------------
+fps    :: Int; fps    = 60  -- | frame rate
+width  :: Int; width  = 640 -- | width of render window
+height :: Int; height = 320 -- | height of render window
 
--- | frame rate
-fps :: Int
-fps = 60
+-------------------------------------
+-- | render target
+-------------------------------------
+window :: Display; window = InWindow "gloss" (width, height) (10, 10)
 
--- | width of render window
-width :: Int
-width = 640
-
--- | height of render window
-height :: Int
-height = 320
-
--- | Window implementation
-window :: Display
-window = InWindow "gloss" (width, height) (10, 10)
-
+-------------------------------------
 -- | clear colour
-background :: Color
-background = dark white
+-------------------------------------
+background :: Color; background = dark white

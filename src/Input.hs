@@ -1,10 +1,8 @@
 --------------------------------------------------------------
 --------------------------------------------------------------
 --
---  http://andrew.gibiansky.com/blog/haskell/haskell-gloss/
---
---  Graphics and Simulation in haskell
---  Ryan Needham
+--  HaskellEngine
+--  MyForteIsTimeTravel
 --
 --------------------------------------------------------------
 --------------------------------------------------------------
@@ -13,6 +11,9 @@ module Input (handleEvents) where
 import Graphics.Gloss.Interface.Pure.Game
 import Simulation
 import Linear
+
+-- | TO DO
+-- event / command queue
 
 -------------------------------------
 -- Handle IO

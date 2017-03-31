@@ -1,17 +1,18 @@
 --------------------------------------------------------------
 --------------------------------------------------------------
 --
---  http://andrew.gibiansky.com/blog/haskell/haskell-gloss/
---
---  Graphics and Simulation in haskell
---  Ryan Needham
+--  HaskellEngine
+--  MyForteIsTimeTravel
 --
 --------------------------------------------------------------
 --------------------------------------------------------------
 module Main (main) where
 
-import Graphics.Gloss.Interface.Pure.Game
+-------------------------------------
+-- main
+-------------------------------------
 
+import Graphics.Gloss.Interface.Pure.Game
 import Simulation
 import Collision
 import Rendering
@@ -20,15 +21,21 @@ import Linear
 import Input
 
 -------------------------------------
--- Main
+-- | run simulation and collision 
+-- | detection on engine state
 -------------------------------------
--- | frame rate
-fps :: Int
-fps = 60
-
--- | run simulation on state
 update :: Float -> [BallState] -> [BallState]
 update seconds = ballsToTheWall . advance seconds
 
+-------------------------------------
+-- | main
+-------------------------------------
 main :: IO ()
-main = play window background fps (initialState count) render handleEvents update
+main = play                 -- gloss game initialiser
+    window                  -- render target
+    background              -- clear colour
+    fps                     -- frame rate
+    (initialState count)    -- initial engine state
+    render                  -- draw engine state
+    handleEvents            -- handle user events
+    update                  -- update function
