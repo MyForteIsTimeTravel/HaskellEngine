@@ -25,7 +25,7 @@ import Input
 -- | detection on engine state
 -------------------------------------
 update :: Float -> [BallState] -> [BallState]
-update seconds = ballsToTheWall . advance seconds
+update seconds = checkCollisions . advance seconds
 
 -------------------------------------
 -- | main

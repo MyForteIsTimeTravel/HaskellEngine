@@ -17,14 +17,14 @@ import Graphics.Gloss
 -------------------------------------
 -- | window parameters
 -------------------------------------
-fps    :: Int; fps    = 60  -- | frame rate
-width  :: Int; width  = 640 -- | width of render window
-height :: Int; height = 320 -- | height of render window
+fps    :: Int; fps    = 60   -- | frame rate
+width  :: Int; width  = 1200 -- | width of render window
+height :: Int; height =  800 -- | height of render window
 
 -------------------------------------
 -- | render target
 -------------------------------------
-window :: Display; window = InWindow "gloss" (width, height) (10, 10)
+window :: Display; window = InWindow "HaskellEngine" (width, height) (10, 10)
 
 -------------------------------------
 -- | clear colour

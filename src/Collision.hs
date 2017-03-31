@@ -6,7 +6,7 @@
 --
 --------------------------------------------------------------
 --------------------------------------------------------------
-module Collision (ballsToTheWall, countCollisions) where
+module Collision (checkCollisions, countCollisions) where
 
 import Graphics.Gloss
 import Simulation
@@ -17,11 +17,23 @@ import Linear
 -- ball to ball collisions
 -- more
 
--- | detect and resolve ball to wall collisions
-ballsToTheWall :: [BallState] -> [BallState]
-ballsToTheWall []     = []
-ballsToTheWall [x]    = [ballToTheWall x]
-ballsToTheWall (x:xs) = [ballToTheWall x] ++ ballsToTheWall xs
+-------------------------------------
+-- Detect and Resolve
+-------------------------------------
+
+-----------------------------------------------------------
+-- | detect and resolve all collisions in the given state
+-- |
+checkCollisions :: [BallState] -> [BallState]
+checkCollisions scene = checkObjects (checkEdges scene)
+
+------------------------------
+-- | Edge Collisions
+------------------------------
+checkEdges :: [BallState] -> [BallState]
+checkEdges []     = []
+checkEdges [x]    = [ballToTheWall x]
+checkEdges (x:xs) = [ballToTheWall x] ++ checkEdges xs
 
 -- | detect and resolve a single ball to wall collision
 ballToTheWall :: BallState -> BallState
@@ -30,36 +42,47 @@ ballToTheWall ball = ball {
     vel = vel', 
     acc = (acc ball), 
     rad = (rad ball), 
-    col = col' }
-        where 
-            vel' = if (topBottomCollision (pos ball) (rad ball)) then ((x (vel ball)), (-0.8) * (y (vel ball)))
-                   else if (leftRightCollision (pos ball) (rad ball)) then ((-0.8) * (x (vel ball)), (y (vel ball)))
-                   else vel ball
-                   
-            col' = if (topBottomCollision (pos ball) (rad ball)) || 
-                      (leftRightCollision (pos ball) (rad ball)) then col ball
-                   else col ball  
-                 
--- | detect and resolve vertical edge collision
-topBottomCollision :: Linear.Vector2D -> Float -> Bool
-topBottomCollision (_, y) radius = topCollision || bottomCollision where 
-    topCollision    = y - radius <= -fromIntegral height / 2
-    bottomCollision = y + radius >=  fromIntegral height / 2
-        
--- | detect and resolve horizontal edge collision
-leftRightCollision :: Linear.Vector2D -> Float -> Bool
-leftRightCollision (x, _) radius = rightCollision || leftCollision where 
-    leftCollision  = x - radius <= -fromIntegral width / 2
-    rightCollision = x + radius >=  fromIntegral width / 2
+    col = (col ball) }
+        where vel' = if topCollision    (pos ball) (rad ball) then ((x (vel ball)), (-0.8) * (y (vel ball))) else 
+                     if bottomCollision (pos ball) (rad ball) then ((x (vel ball)), (-0.8) * (y (vel ball))) else 
+                     if leftCollision   (pos ball) (rad ball) then ((-0.8) * (x (vel ball)), (y (vel ball))) else
+                     if rightCollision  (pos ball) (rad ball) then ((-0.8) * (x (vel ball)), (y (vel ball))) else vel ball
+
+-- | 
+topCollision    :: Vector2D -> Float -> Bool; topCollision    pos rad = (y pos) - rad <= -fromIntegral height / 2
+bottomCollision :: Vector2D -> Float -> Bool; bottomCollision pos rad = (y pos) + rad >=  fromIntegral height / 2
+leftCollision   :: Vector2D -> Float -> Bool; leftCollision   pos rad = (x pos) - rad <= -fromIntegral width  / 2
+rightCollision  :: Vector2D -> Float -> Bool; rightCollision  pos rad = (x pos) + rad >=  fromIntegral width  / 2
+
+------------------------------
+-- | Object Collisions
+------------------------------
+checkObjects :: [BallState] -> [BallState]
+checkObjects []     = []
+checkObjects [x]    = [x]
+checkObjects (x:xs) = [ballsToBalls x xs] ++ checkObjects xs
+
+ballsToBalls :: BallState -> [BallState] -> BallState
+ballsToBalls ball scene = ball -- TO-DO
+
+
+-------------------------------------
+-- Metrics
+-------------------------------------
 
 -- | tests if a single ball is against an edge
 isBallToTheWall :: BallState -> Bool
 isBallToTheWall ball = 
-    (topBottomCollision (pos ball) (rad ball)) ||
-    (leftRightCollision (pos ball) (rad ball))
+    (topCollision    (pos ball) (rad ball)) || 
+    (bottomCollision (pos ball) (rad ball)) ||
+    (leftCollision   (pos ball) (rad ball)) || 
+    (rightCollision  (pos ball) (rad ball))
         
 -- | count the number of collisions present
-countCollisions :: [BallState] -> [Bool] -- count this in renderer
-countCollisions []     = []
-countCollisions [x]    = []
-countCollisions (x:xs) = [isBallToTheWall x] ++ countCollisions xs
+countCollisions :: [BallState] -> Int
+countCollisions state = (length (filter (==True) (collect state)))
+
+collect :: [BallState] -> [Bool] -- count this in renderer
+collect []     = []
+collect [x]    = []
+collect (x:xs) = [isBallToTheWall x] ++ collect xs
