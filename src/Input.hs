@@ -31,17 +31,3 @@ handleEvents (EventKey (MouseButton leftButton) bs _ pos) state =
     
 -- | default, don't do anything
 handleEvents _ state = state
-
--- | move all balls to the mouse position
-ballsToMouse :: Vector2D -> [BallState] -> [BallState]
-ballsToMouse loc []     = []
-ballsToMouse loc [x]    = [ballToMouse loc x]
-ballsToMouse loc (x:xs) = [ballToMouse loc x] ++ ballsToMouse loc xs
-
-ballToMouse :: Vector2D -> BallState -> BallState
-ballToMouse loc ball = ball { 
-    pos = pos ball, 
-    vel = Linear.scale (Linear.normalize (Linear.sub (loc) (pos ball))) (0.5), 
-    acc = acc ball, 
-    rad = rad ball, 
-    col = col ball }
