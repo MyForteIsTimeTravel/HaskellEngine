@@ -30,12 +30,7 @@ checkEdges (x:xs) = [ballToTheWall x] ++ checkEdges xs
 
 -- | detect and resolve a single ball to wall collision
 ballToTheWall :: BallState -> BallState
-ballToTheWall ball = ball { 
-    pos = (pos ball), 
-    vel = vel', 
-    acc = (acc ball), 
-    rad = (rad ball), 
-    col = (col ball) }
+ballToTheWall ball = ball { vel = vel' }
         where vel' = 
                 -- hit roof
                 if (y (pos ball)) - (rad ball) <= -fromIntegral height / 2 then 
@@ -62,12 +57,7 @@ checkObjects [x]    = [x]
 checkObjects (x:xs) = [ballToBalls x xs] ++ checkObjects xs
 
 ballToBalls :: BallState -> [BallState] -> BallState
-ballToBalls ball scene = ball {
-    pos = pos ball,
-    vel = vel ball,
-    acc = foldl (add) (acc ball) (map (ballToBall ball) (scene)),
-    rad = rad ball,
-    col = col ball}
+ballToBalls ball scene = ball { acc = foldl (add) (acc ball) (map (ballToBall ball) (scene)) }
                             
 -- | check if the balls are intersecting and push one away
 ballToBall :: BallState -> BallState -> Vector2D
@@ -92,7 +82,7 @@ isBallToTheWall ball =
 countCollisions :: [BallState] -> Int
 countCollisions state = (length (filter (==True) (collect state)))
 
-collect :: [BallState] -> [Bool] -- count this in renderer
+collect :: [BallState] -> [Bool]
 collect []     = []
 collect [x]    = []
 collect (x:xs) = [isBallToTheWall x] ++ collect xs

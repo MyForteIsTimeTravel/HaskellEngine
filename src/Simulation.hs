@@ -6,7 +6,10 @@
 --
 --------------------------------------------------------------
 --------------------------------------------------------------
-module Simulation (BallState, pos, vel, acc, rad, col, count, initialState, advance) where
+module Simulation (
+    GameState, paused, tick, actors, 
+    BallState, pos, vel, acc, rad, col, 
+    count, initialize, advance) where
 
 -------------------------------------
 -- Simulate World
@@ -18,10 +21,8 @@ import Window
 import Linear
 
 -------------------------------------
--- | the data model for a ball
+-- | the data model for a simulation
 -------------------------------------
-
--- IMPLEMENT THROUGHOUT ENGINE
 data GameState = Game {
     paused :: Bool,         -- should the simulation run
     tick   :: Float,        -- current simulation tick
@@ -29,12 +30,22 @@ data GameState = Game {
 }
 
 data BallState = Ball {
-    pos :: Linear.Vector2D,  -- the ball's position in 2D space
-    vel :: Linear.Vector2D,  -- the ball's velocity vector
-    acc :: Linear.Vector2D,  -- the ball's acceleration
-    rad :: Float,            -- the ball's radius, also functions as mass
-    col :: Color             -- the ball's colour
+    pos :: Vector2D, -- the ball's position in 2D space
+    vel :: Vector2D, -- the ball's velocity vector
+    acc :: Vector2D, -- the ball's acceleration
+    rad :: Float,    -- the ball's radius, also functions as mass
+    col :: Color     -- the ball's colour
 } deriving Show
+
+-------------------------------------
+-- | init state
+-------------------------------------
+initialize :: GameState
+initialize = Game {
+    paused = False,
+    tick   = 0,
+    actors = populate count
+    }
 
 -------------------------------------
 -- | the number of balls in the 
@@ -52,10 +63,10 @@ maxSpeed :: Float; maxSpeed = 16.0
 -- | return a list of n random ball
 -- | states
 -------------------------------------
-initialState :: Int -> [BallState]
-initialState 0 = []
-initialState 1 = addBall []
-initialState n = addBall (initialState (n - 1))
+populate :: Int -> [BallState]
+populate 0 = []
+populate 1 = addBall []
+populate n = addBall (populate (n - 1))
 
 -------------------------------------
 -- | add a ball to the state's list 
@@ -65,7 +76,6 @@ addBall :: [BallState] -> [BallState]
 addBall state = state ++ [Ball { 
     pos = makePos state, 
     vel = Linear.rotate ((-10, 0)) (fromIntegral (length state)),
-    --vel = (0.0, 0.0),
     acc = (-0.001, 0.01), 
     rad = 0.82 + (fromIntegral (length state)) * 0.02,
     col = makeColor ((fromIntegral ((length state))) / fromIntegral count) 
@@ -94,12 +104,10 @@ advance seconds (x:xs) = [updateBall seconds x] ++ advance seconds xs
 -------------------------------------
 updateBall :: Float -> BallState -> BallState
 updateBall seconds ball = 
-    Ball { 
+    ball { 
         pos = pos', 
         vel = vel', 
-        acc = applyForces forces (0, 0) (rad ball), 
-        rad = rad ball, 
-        col = col ball } 
+        acc = applyForces forces (0, 0) (rad ball)} 
     where 
         forces = [gravity, wind, friction (vel ball), drag (rad ball) (vel')]
         vel'   = limit ((vel ball) `add` (acc ball)) (maxSpeed)

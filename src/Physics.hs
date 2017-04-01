@@ -59,9 +59,11 @@ wind :: Vector2D; wind = (0.032, 0)
 -- | the given velocity
 -------------------------------------
 friction :: Vector2D -> Vector2D
-friction vel = Linear.scale (Linear.normalize (Linear.scale (vel) (-1))) (fCo * normal)
+friction vel = Linear.scale (Linear.normalize (Linear.scale (vel) (-1))) (fCo * fSurfNorm)
 
 fCo :: Float; fCo = 0.01
+fSurfNorm :: Float; fSurfNorm = 1.0
+
 -------------------------------------
 -- | the drag of a circle with the 
 -- | given radius
@@ -72,4 +74,3 @@ drag area vel =
           (dCo * (magnitude vel) * (magnitude vel)) -- drag magnitude
 
 dCo :: Float; dCo = 0.1
-normal :: Float; normal = 1

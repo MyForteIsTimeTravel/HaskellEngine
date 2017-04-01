@@ -6,15 +6,10 @@
 --
 --------------------------------------------------------------
 --------------------------------------------------------------
-module Linear 
-      (x, y, r, g, Vector2D,
-       add, sub, divide, scale, 
-       magnitude, normalize, distance, limit, rotate,
-       toDegrees, toRadians) where
-
----- TO DO ----
--- random :: Vector2D
--- lerp :: Vector2D -> Vector2D -> Float Vector2D
+module Linear (x, y, r, g, Vector2D,
+               add, sub, divide, scale, 
+               magnitude, normalize, distance, limit, rotate, withMagnitude,
+               toDegrees, toRadians) where
 
 -----------------------------------------
 -- | alias declarations
@@ -22,9 +17,12 @@ module Linear
 type Vector2D = (Float, Float)
 x :: Vector2D -> Float; x v = fst v; y :: Vector2D -> Float; y v = snd v
 r :: Vector2D -> Float; r v = fst v; g :: Vector2D -> Float; g v = snd v
-
+-----------------------------------------
+-- | Conversion
+-----------------------------------------
 toRadians :: Float -> Float; toRadians d = d * (pi / 180)
 toDegrees :: Float -> Float; toDegrees r = r * (180 / pi)
+toArray   :: Vector2D -> [Float]; toArray v = [(x v), (y v)]
 -----------------------------------------
 -- | vector addition (+)
 -----------------------------------------
@@ -87,6 +85,6 @@ between a b = if   ((dot a b) / ((magnitude a) * (magnitude b)) <= -1) then pi
 -- | dot product
 -----------------------------------------
 dot :: Vector2D -> Vector2D -> Float
-dot a b = foldr (+) 0 (map multiply (zip [(x a), (y a)] [(x b), (y b)]))
+dot a b = foldr (+) 0 (map multiply (zip (toArray a) (toArray b)))
     where multiply :: (Float, Float) -> Float 
           multiply a = (x a) * (y a)
