@@ -17,9 +17,9 @@ import Graphics.Gloss
 -------------------------------------
 -- | window parameters
 -------------------------------------
-fps    :: Int; fps    = 60   -- | frame rate
-width  :: Int; width  = 1200 -- | width of render window
-height :: Int; height =  800 -- | height of render window
+fps    :: Int; fps    = 60  -- | frame rate
+width  :: Int; width  = 1280 -- | width of render window
+height :: Int; height = 640 -- | height of render window
 
 -------------------------------------
 -- | render target

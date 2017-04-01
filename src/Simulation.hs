@@ -13,12 +13,21 @@ module Simulation (BallState, pos, vel, acc, rad, col, count, initialState, adva
 -------------------------------------
 
 import Graphics.Gloss
-import Linear
 import Physics
+import Window
+import Linear
 
 -------------------------------------
 -- | the data model for a ball
 -------------------------------------
+
+-- IMPLEMENT THROUGHOUT ENGINE
+data GameState = Game {
+    paused :: Bool,         -- should the simulation run
+    tick   :: Float,        -- current simulation tick
+    actors :: [BallState]   -- actors in the scene
+}
+
 data BallState = Ball {
     pos :: Linear.Vector2D,  -- the ball's position in 2D space
     vel :: Linear.Vector2D,  -- the ball's velocity vector
@@ -54,15 +63,21 @@ initialState n = addBall (initialState (n - 1))
 -------------------------------------
 addBall :: [BallState] -> [BallState]
 addBall state = state ++ [Ball { 
-    pos = (0,  0), 
+    pos = makePos state, 
     vel = Linear.rotate ((-10, 0)) (fromIntegral (length state)),
     --vel = (0.0, 0.0),
     acc = (-0.001, 0.01), 
-    rad = 4.0 + (fromIntegral (length state)) * 0.01,
-    col = makeColor ((fromIntegral ((length state)) * 0.01)) 
-                    ((fromIntegral ((length state)) * 0.01)) 
-                    ((fromIntegral ((length state)) * 0.01)) (0.4)
+    rad = 0.82 + (fromIntegral (length state)) * 0.02,
+    col = makeColor ((fromIntegral ((length state))) / fromIntegral count) 
+                    ((fromIntegral ((length state))) / fromIntegral count) 
+                    ((fromIntegral ((length state))) / fromIntegral count) (0.4)
 }]
+
+makePos :: [BallState] -> Vector2D
+makePos state = (
+     (((fromIntegral ((length state))) / fromIntegral count) / fromIntegral width),  -- x
+     (((fromIntegral ((length state))) / fromIntegral count) / fromIntegral height)   -- y
+     )
 
 -------------------------------------
 -- | advance the whole simulation the 

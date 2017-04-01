@@ -10,20 +10,13 @@ module Collision (checkCollisions, countCollisions) where
 
 import Graphics.Gloss
 import Simulation
+import Physics
 import Window
 import Linear
-
--- | TO DO
--- ball to ball collisions
--- more
 
 -------------------------------------
 -- Detect and Resolve
 -------------------------------------
-
------------------------------------------------------------
--- | detect and resolve all collisions in the given state
--- |
 checkCollisions :: [BallState] -> [BallState]
 checkCollisions scene = checkObjects (checkEdges scene)
 
@@ -43,16 +36,22 @@ ballToTheWall ball = ball {
     acc = (acc ball), 
     rad = (rad ball), 
     col = (col ball) }
-        where vel' = if topCollision    (pos ball) (rad ball) then ((x (vel ball)), (-0.8) * (y (vel ball))) else 
-                     if bottomCollision (pos ball) (rad ball) then ((x (vel ball)), (-0.8) * (y (vel ball))) else 
-                     if leftCollision   (pos ball) (rad ball) then ((-0.8) * (x (vel ball)), (y (vel ball))) else
-                     if rightCollision  (pos ball) (rad ball) then ((-0.8) * (x (vel ball)), (y (vel ball))) else vel ball
-
--- | 
-topCollision    :: Vector2D -> Float -> Bool; topCollision    pos rad = (y pos) - rad <= -fromIntegral height / 2
-bottomCollision :: Vector2D -> Float -> Bool; bottomCollision pos rad = (y pos) + rad >=  fromIntegral height / 2
-leftCollision   :: Vector2D -> Float -> Bool; leftCollision   pos rad = (x pos) - rad <= -fromIntegral width  / 2
-rightCollision  :: Vector2D -> Float -> Bool; rightCollision  pos rad = (x pos) + rad >=  fromIntegral width  / 2
+        where vel' = 
+                -- hit roof
+                if (y (pos ball)) - (rad ball) <= -fromIntegral height / 2 then 
+                    ((x (vel ball)), (-0.8) * (y (vel ball))) else 
+                
+                -- hit floor
+                if (y (pos ball)) + (rad ball) >=  fromIntegral height / 2 then 
+                    ((x (vel ball)), (-0.8) * (y (vel ball))) else 
+                    
+                -- hit left wall
+                if (x (pos ball)) - (rad ball) <= -fromIntegral width  / 2 then 
+                    ((-0.8) * (x (vel ball)), (y (vel ball))) else
+                    
+                -- hit right wall
+                if (x (pos ball)) + (rad ball) >=  fromIntegral width  / 2 then 
+                    ((-0.8) * (x (vel ball)), (y (vel ball))) else vel ball
 
 ------------------------------
 -- | Object Collisions
@@ -60,11 +59,22 @@ rightCollision  :: Vector2D -> Float -> Bool; rightCollision  pos rad = (x pos) 
 checkObjects :: [BallState] -> [BallState]
 checkObjects []     = []
 checkObjects [x]    = [x]
-checkObjects (x:xs) = [ballsToBalls x xs] ++ checkObjects xs
+checkObjects (x:xs) = [ballToBalls x xs] ++ checkObjects xs
 
-ballsToBalls :: BallState -> [BallState] -> BallState
-ballsToBalls ball scene = ball -- TO-DO
-
+ballToBalls :: BallState -> [BallState] -> BallState
+ballToBalls ball scene = ball {
+    pos = pos ball,
+    vel = vel ball,
+    acc = foldl (add) (acc ball) (map (ballToBall ball) (scene)),
+    rad = rad ball,
+    col = col ball}
+                            
+-- | check if the balls are intersecting and push one away
+ballToBall :: BallState -> BallState -> Vector2D
+ballToBall a b = 
+    if (distance (pos a) (pos b)) < ((rad a) + (rad b)) then 
+        (normalize ((pos a) `sub` (pos b))) `Linear.scale` ((distance (pos a) (pos b)) - ((rad a)))
+    else (0, 0)
 
 -------------------------------------
 -- Metrics
@@ -73,10 +83,10 @@ ballsToBalls ball scene = ball -- TO-DO
 -- | tests if a single ball is against an edge
 isBallToTheWall :: BallState -> Bool
 isBallToTheWall ball = 
-    (topCollision    (pos ball) (rad ball)) || 
-    (bottomCollision (pos ball) (rad ball)) ||
-    (leftCollision   (pos ball) (rad ball)) || 
-    (rightCollision  (pos ball) (rad ball))
+    ((y (pos ball)) - (rad ball) <= -fromIntegral height / 2) || 
+    ((y (pos ball)) + (rad ball) >=  fromIntegral height / 2) ||
+    ((x (pos ball)) - (rad ball) <= -fromIntegral width  / 2) || 
+    ((x (pos ball)) + (rad ball) >=  fromIntegral width  / 2)
         
 -- | count the number of collisions present
 countCollisions :: [BallState] -> Int
