@@ -18,50 +18,44 @@ import Collision
 import Geometry
 import Window
 import Linear
+import Ball
+import UI
 
 -----------------------------------------
 -- | render UI and actors
 -----------------------------------------
 render :: GameState -> Picture
-render state = pictures ((renderBalls (actors state)) ++ [uiBackground, pausedLabel, ballCount, simulationTick, collisionCount])
-    where uiBackground =
-              Translate (-0.39 * fromIntegral width) (-0.39 * fromIntegral height) $ 
-              Scale     (0.2 * fromIntegral width) (0.08 * fromIntegral height) $ 
-              Color     (makeColor (0.32) (0.32) (0.32) (0.8)) $
-              polygon   rect
-
-          ballCount = 
-              Translate (-0.480 * fromIntegral width) (-0.440 * fromIntegral height) $ 
-              Scale     (0.12) (0.12) $ 
-              Color     (dark white) $
-              Text      ("balls - " ++ show (length (actors state)))
+render state = pictures ((renderBalls (actors state)) ++ [uiBackground, status, ballCount, simulationTick, collisionCount])
+    where 
+        uiBackground = -- transparent black backboard
+            Translate (-0.39 * fromIntegral width) (-0.39 * fromIntegral height) $ 
+            Scale     (0.2 * fromIntegral width) (0.08 * fromIntegral height) $ 
+            Color     (makeColor (0.32) (0.32) (0.32) (0.8)) $
+            polygon   rect
             
-          collisionCount = 
-              Translate (-0.480 * fromIntegral width) (-0.410 * fromIntegral height) $ 
-              Scale     (0.12) (0.12) $ 
-              Color     (dark white) $
-              Text      ("Collisions - " ++ show (countCollisions (actors state)))
+        ballCount = label
+            ("balls : : " ++ show (length (actors state)))
+            ((-0.480 * fromIntegral width), (-0.440 * fromIntegral height))
             
-          simulationTick = 
-              Translate (-0.480 * fromIntegral width) (-0.380 * fromIntegral height) $ 
-              Scale     (0.12) (0.12) $ 
-              Color     (dark white) $
-              Text      ("simulation tick - " ++ show (tick state))
-              
-          pausedLabel =
-              Translate (-0.480 * fromIntegral width) (-0.350 * fromIntegral height) $ 
-              Scale     (0.12) (0.12) $ 
-              Color     (black) $
-              Text      (if (paused state) then "PAUSED" else "RUNNING")
+        collisionCount = label
+            ("Collisions : : " ++ show (countCollisions (actors state)))
+            ((-0.480 * fromIntegral width), (-0.410 * fromIntegral height))
+            
+        simulationTick = label
+            ("simulation tick : : " ++ show (tick state))
+            ((-0.480 * fromIntegral width), (-0.380 * fromIntegral height))
+            
+        status = title
+            (if (paused state) then "PAUSED" else ("RUNNING" ++ dotdotdot (tick state)))
+            ((-0.480 * fromIntegral width), (-0.350 * fromIntegral height))
             
 -----------------------------------------
 -- | render actors, plural
 -----------------------------------------
 renderBalls :: [BallState] -> [Picture]
 renderBalls state = concat (map renderBall state)
-
 -----------------------------------------
--- | render actor, singular
+-- | render actor as ball
 -----------------------------------------
 renderBall :: BallState -> [Picture]
 renderBall ball = [fill, outline, radius]
@@ -70,13 +64,27 @@ renderBall ball = [fill, outline, radius]
             Translate (x (pos ball)) (y (pos ball)) $
             Color     (makeColor (0.32) (0.32) (0.32) (0.8))  $
             circleSolid (rad ball)
-    
         outline =
             Translate (x (pos ball)) (y (pos ball)) $
-            Color     (col ball)  $
-            thickCircle (rad ball) (3)
-            
+            Color     black  $
+            thickCircle (rad ball) (1)
         radius = 
             Translate (x (pos ball)) (y (pos ball)) $
-            Color     (black) $
-            line      [(0, 0)] -- TO DO
+            Color     (white) $
+            line      [(0, 0), ((rad ball), 0) `Linear.rotate` (rot ball)]
+-----------------------------------------
+-- | render actor as box
+-----------------------------------------
+renderBox :: BallState -> [Picture]
+renderBox box = [sprite, direction]
+    where
+        sprite =
+            Translate (x (pos box)) (y (pos box)) $
+            Color     (makeColor (0.32) (0.32) (0.32) (0.8))  $
+            Rotate    (-toDegrees (heading (vel box))) $
+            Scale     (8) (4) $
+            polygon   rect
+        direction =
+            Translate (x (pos box)) (y (pos box)) $
+            Color     (white) $
+            line      [(0, 0), (4 * magnitude (vel box), 0) `Linear.rotate` (rot box)]

@@ -6,10 +6,24 @@
 --
 --------------------------------------------------------------
 --------------------------------------------------------------
-module Linear (x, y, r, g, Vector2D,
-               add, sub, divide, scale, 
-               magnitude, normalize, distance, limit, rotate, withMagnitude,
-               toDegrees, toRadians) where
+module Linear (
+    x, y,
+    r, g, 
+    u, v,
+    Vector2D,
+    add, sub, 
+    divide, scale, 
+    magnitude, 
+    normalize, 
+    distance, 
+    limit, 
+    rotate, 
+    withMagnitude,
+    heading,
+    toDegrees, 
+    toRadians,
+    toArray
+) where
 
 -----------------------------------------
 -- | alias declarations
@@ -17,6 +31,7 @@ module Linear (x, y, r, g, Vector2D,
 type Vector2D = (Float, Float)
 x :: Vector2D -> Float; x v = fst v; y :: Vector2D -> Float; y v = snd v
 r :: Vector2D -> Float; r v = fst v; g :: Vector2D -> Float; g v = snd v
+u :: Vector2D -> Float; u v = fst v; v :: Vector2D -> Float; v vec = snd vec
 -----------------------------------------
 -- | Conversion
 -----------------------------------------
@@ -43,6 +58,10 @@ scale :: Vector2D -> Float -> Vector2D; scale vec scl = ((x vec) * scl, (y vec) 
 -- | vector magnitude (|| v ||)
 -----------------------------------------
 magnitude :: Vector2D -> Float; magnitude vec = sqrt ((x vec) * (x vec) + (y vec) * (y vec))
+-----------------------------------------
+-- | vector magnitude alias (|| v ||)
+-----------------------------------------
+len :: Vector2D -> Float; len vec = magnitude vec
 -----------------------------------------
 -- | vector normalization (v / || v ||)
 -----------------------------------------

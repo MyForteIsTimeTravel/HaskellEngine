@@ -47,7 +47,8 @@ applyAttraction o r p a = if magnitude (o `sub` p) < r then (o `sub` p) else a
 -------------------------------------
 -- | gravity defined as a vector
 -------------------------------------
-gravity :: Vector2D; gravity = (0, -0.64)
+--gravity :: Vector2D; gravity = (0, -0.64)
+gravity :: Vector2D; gravity = (0, 0)
 
 -------------------------------------
 -- | wind defined as a vector

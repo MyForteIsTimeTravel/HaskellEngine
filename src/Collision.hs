@@ -13,6 +13,7 @@ import Simulation
 import Physics
 import Window
 import Linear
+import Ball
 
 -------------------------------------
 -- Detect and Resolve
@@ -32,18 +33,15 @@ checkEdges (x:xs) = [ballToTheWall x] ++ checkEdges xs
 ballToTheWall :: BallState -> BallState
 ballToTheWall ball = ball { vel = vel' }
         where vel' = 
-                -- hit roof
+                -- hit floor
                 if (y (pos ball)) - (rad ball) <= -fromIntegral height / 2 then 
                     ((x (vel ball)), (-0.8) * (y (vel ball))) else 
-                
-                -- hit floor
+                -- hit roof
                 if (y (pos ball)) + (rad ball) >=  fromIntegral height / 2 then 
-                    ((x (vel ball)), (-0.8) * (y (vel ball))) else 
-                    
+                    ((x (vel ball)), -10) else 
                 -- hit left wall
                 if (x (pos ball)) - (rad ball) <= -fromIntegral width  / 2 then 
                     ((-0.8) * (x (vel ball)), (y (vel ball))) else
-                    
                 -- hit right wall
                 if (x (pos ball)) + (rad ball) >=  fromIntegral width  / 2 then 
                     ((-0.8) * (x (vel ball)), (y (vel ball))) else vel ball
@@ -69,7 +67,6 @@ ballToBall a b =
 -------------------------------------
 -- Metrics
 -------------------------------------
-
 -- | tests if a single ball is against an edge
 isBallToTheWall :: BallState -> Bool
 isBallToTheWall ball = 
@@ -77,11 +74,10 @@ isBallToTheWall ball =
     ((y (pos ball)) + (rad ball) >=  fromIntegral height / 2) ||
     ((x (pos ball)) - (rad ball) <= -fromIntegral width  / 2) || 
     ((x (pos ball)) + (rad ball) >=  fromIntegral width  / 2)
-        
 -- | count the number of collisions present
 countCollisions :: [BallState] -> Int
 countCollisions state = (length (filter (==True) (collect state)))
-
+-- | collect collisions im scene
 collect :: [BallState] -> [Bool]
 collect []     = []
 collect [x]    = []
