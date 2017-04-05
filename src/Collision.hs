@@ -13,53 +13,53 @@ import Simulation
 import Physics
 import Window
 import Linear
-import Ball
+import Entity
 
 -------------------------------------
 -- Detect and Resolve
 -------------------------------------
-checkCollisions :: [BallState] -> [BallState]
+checkCollisions :: [EntityState] -> [EntityState]
 checkCollisions scene = checkObjects (checkEdges scene)
 
 ------------------------------
 -- | Edge Collisions
 ------------------------------
-checkEdges :: [BallState] -> [BallState]
+checkEdges :: [EntityState] -> [EntityState]
 checkEdges []     = []
-checkEdges [x]    = [ballToTheWall x]
-checkEdges (x:xs) = [ballToTheWall x] ++ checkEdges xs
+checkEdges [x]    = [entityToTheWall x]
+checkEdges (x:xs) = [entityToTheWall x] ++ checkEdges xs
 
--- | detect and resolve a single ball to wall collision
-ballToTheWall :: BallState -> BallState
-ballToTheWall ball = ball { vel = vel' }
-        where vel' = 
+-- | detect and resolve a single Entity to wall collision
+entityToTheWall :: EntityState -> EntityState
+entityToTheWall entity = entity { pos = pos' }
+        where pos' = 
                 -- hit floor
-                if (y (pos ball)) - (rad ball) <= -fromIntegral height / 2 then 
-                    ((x (vel ball)), (-0.8) * (y (vel ball))) else 
+                if (y (pos entity)) - (rad entity) <= -fromIntegral height / 2 then 
+                    ((x (pos entity)), fromIntegral ( height `div` 2 ) - (rad entity)) else 
                 -- hit roof
-                if (y (pos ball)) + (rad ball) >=  fromIntegral height / 2 then 
-                    ((x (vel ball)), -10) else 
+                if (y (pos entity)) + (rad entity) >=  fromIntegral height / 2 then 
+                    ((x (pos entity)), -fromIntegral ( height `div` 2 ) + (rad entity)) else 
                 -- hit left wall
-                if (x (pos ball)) - (rad ball) <= -fromIntegral width  / 2 then 
-                    ((-0.8) * (x (vel ball)), (y (vel ball))) else
+                if (x (pos entity)) - (rad entity) <= -fromIntegral width  / 2 then 
+                    ( fromIntegral ( width `div` 2 ) - (rad entity), (y (pos entity))) else
                 -- hit right wall
-                if (x (pos ball)) + (rad ball) >=  fromIntegral width  / 2 then 
-                    ((-0.8) * (x (vel ball)), (y (vel ball))) else vel ball
+                if (x (pos entity)) + (rad entity) >=  fromIntegral width  / 2 then 
+                    ( -fromIntegral ( width `div` 2 ) + (rad entity), (y (pos entity))) else pos entity
 
 ------------------------------
 -- | Object Collisions
 ------------------------------
-checkObjects :: [BallState] -> [BallState]
+checkObjects :: [EntityState] -> [EntityState]
 checkObjects []     = []
 checkObjects [x]    = [x]
-checkObjects (x:xs) = [ballToBalls x xs] ++ checkObjects xs
+checkObjects (x:xs) = [entityToEntities x xs] ++ checkObjects xs
 
-ballToBalls :: BallState -> [BallState] -> BallState
-ballToBalls ball scene = ball { acc = foldl (add) (acc ball) (map (ballToBall ball) (scene)) }
+entityToEntities :: EntityState -> [EntityState] -> EntityState
+entityToEntities entity scene = entity { acc = foldl (add) (acc entity) (map (entityToEntity entity) (scene)) }
                             
--- | check if the balls are intersecting and push one away
-ballToBall :: BallState -> BallState -> Vector2D
-ballToBall a b = 
+-- | check if the Entitys are intersecting and push one away
+entityToEntity :: EntityState -> EntityState -> Vector2D
+entityToEntity a b = 
     if (distance (pos a) (pos b)) < ((rad a) + (rad b)) then 
         (normalize ((pos a) `sub` (pos b))) `Linear.scale` ((distance (pos a) (pos b)) - ((rad a)))
     else (0, 0)
@@ -67,18 +67,18 @@ ballToBall a b =
 -------------------------------------
 -- Metrics
 -------------------------------------
--- | tests if a single ball is against an edge
-isBallToTheWall :: BallState -> Bool
-isBallToTheWall ball = 
-    ((y (pos ball)) - (rad ball) <= -fromIntegral height / 2) || 
-    ((y (pos ball)) + (rad ball) >=  fromIntegral height / 2) ||
-    ((x (pos ball)) - (rad ball) <= -fromIntegral width  / 2) || 
-    ((x (pos ball)) + (rad ball) >=  fromIntegral width  / 2)
+-- | tests if a single Entity is against an edge
+isEntityToTheWall :: EntityState -> Bool
+isEntityToTheWall entity = 
+    ((y (pos entity)) - (rad entity) <= -fromIntegral height / 2) || 
+    ((y (pos entity)) + (rad entity) >=  fromIntegral height / 2) ||
+    ((x (pos entity)) - (rad entity) <= -fromIntegral width  / 2) || 
+    ((x (pos entity)) + (rad entity) >=  fromIntegral width  / 2)
 -- | count the number of collisions present
-countCollisions :: [BallState] -> Int
+countCollisions :: [EntityState] -> Int
 countCollisions state = (length (filter (==True) (collect state)))
 -- | collect collisions im scene
-collect :: [BallState] -> [Bool]
+collect :: [EntityState] -> [Bool]
 collect []     = []
 collect [x]    = []
-collect (x:xs) = [isBallToTheWall x] ++ collect xs
+collect (x:xs) = [isEntityToTheWall x] ++ collect xs

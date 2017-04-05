@@ -53,7 +53,7 @@ gravity :: Vector2D; gravity = (0, 0)
 -------------------------------------
 -- | wind defined as a vector
 -------------------------------------
-wind :: Vector2D; wind = (0.032, 0)
+wind :: Vector2D; wind = (1, 0)
 
 -------------------------------------
 -- | the friction of a circle with 

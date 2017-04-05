@@ -13,7 +13,7 @@ import Simulation
 import Physics
 import Linear
 import Window
-import Ball
+import Entity
 
 -------------------------------------
 -- Handle IO
@@ -29,21 +29,26 @@ handle (EventKey (Char 'z') ks _ _) state = decrease state
 
 -- | on mouse click, blast a force through the simulation
 handle (EventKey (MouseButton leftButton) bs _ pos) state = 
-    state { actors = if bs == Down then map (mouseImpulse pos 256) (actors state) else (actors state) }
+    state { entities = if bs == Down then map (mouseImpulse pos 256) (entities state) else (entities state) }
 
 -- | blast impulse from mouse as it moves across the screen
 handle (EventMotion pos) state = 
-    state { paused = (paused state), tick = (tick state), actors = map (mouseAttraction pos 256) (actors state) }
+    -- state { paused = (paused state), tick = (tick state), actors = map (mouseAttraction pos 56) (actors state) }
+    state { paused = (paused state), tick = (tick state), entities = map (mouseSeek pos) (entities state) }
 
 -- | default, don't do anything
 handle _ state = state
 
 -- | blast impulse from mouse
-mouseImpulse :: Vector2D -> Float -> BallState -> BallState
-mouseImpulse origin range ball = 
-    ball { acc = applyImpulse (origin) (range) (pos ball) (acc ball) }
+mouseImpulse :: Vector2D -> Float -> EntityState -> EntityState
+mouseImpulse origin range entity = 
+    entity { acc = applyImpulse (origin) (range) (pos entity) (acc entity) }
 
 -- | attract towards mouse
-mouseAttraction :: Vector2D -> Float -> BallState -> BallState
-mouseAttraction origin range ball = 
-    ball { acc = applyAttraction (origin) (range) (pos ball) (acc ball) }
+mouseAttraction :: Vector2D -> Float -> EntityState -> EntityState
+mouseAttraction origin range entity = 
+    entity { acc = applyAttraction (origin) (range) (pos entity) (acc entity) }
+    
+-- | seek steer towards mouse
+mouseSeek :: Vector2D -> EntityState -> EntityState
+mouseSeek mouse entity = entity { tgt = mouse }
