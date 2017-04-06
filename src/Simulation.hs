@@ -7,7 +7,7 @@
 --------------------------------------------------------------
 --------------------------------------------------------------
 module Simulation (
-    GameState, paused,     tick, entities, forces,
+    GameState, paused,     tick, entities, forces, flowfield,
     pause,     increase,   decrease,
     count,     initialize, advance) where
 
@@ -30,8 +30,8 @@ data GameState = Game {
     paused    :: Bool,         -- should the simulation run
     tick      :: Float,        -- current simulation tick
     forces    :: [Vector2D],   -- the current forces active
-    flowfield :: [[Vector2D]], -- flow field of the environment
-    entities  :: [EntityState]   -- actors in the scene
+    flowfield :: [FlowPoint],  -- flow field of the environment
+    entities  :: [EntityState] -- actors in the scene
 }
 
 -------------------------------------
@@ -42,7 +42,7 @@ initialize = Game {
     paused    = False,
     tick      = 0,
     forces    = [gravity, wind],
-    flowfield = flowField 10,
+    flowfield = makeField 29 29,
     entities  = populate count
 }
 
@@ -65,7 +65,7 @@ decrease state = state { entities = looseEntity (entities state) }
 -- | the number of initial entities in the 
 -- | simualtion
 -------------------------------------
-count :: Int; count = 1
+count :: Int; count = 64
 -------------------------------------
 -- | the highest attainable speed in 
 -- | the simulation
@@ -88,20 +88,31 @@ populate n = addEntity (populate (n - 1)) count
 -- | advance the whole simulation the 
 -- | given number of seconds
 -------------------------------------
-advance :: Float -> [Vector2D] -> [EntityState] -> [EntityState]
-advance seconds forces []     = []
-advance seconds forces [x]    = [updateEntity seconds forces x]
-advance seconds forces (x:xs) = [updateEntity seconds forces x] ++ advance seconds forces xs
+advance :: Float -> GameState -> [EntityState] -> [EntityState]
+advance seconds state []     = []
+advance seconds state [x]    = [updateEntity seconds state x]
+advance seconds state (x:xs) = [updateEntity seconds state x] ++ advance seconds state xs
 -------------------------------------
 -- | advance a single ball's simulation 
 -- | the gyiven number of seconds
 -------------------------------------
-updateEntity :: Float -> [Vector2D] -> EntityState -> EntityState
-updateEntity seconds forces entity = entity { 
+updateEntity :: Float -> GameState -> EntityState -> EntityState
+updateEntity seconds state entity = entity { 
         pos = (pos entity) `add` (vel entity), 
         vel = vel', 
-        acc = applyForces (forces ++ frc) (0, 0) (rad entity),
-        rot = heading vel' 
+        acc = applyForces (frc ++ (forces state)) (0, 0) (rad entity),
+        rot = heading (vel entity) 
     } where 
-        frc  = [friction (vel entity), drag (rad entity) (vel'), (arrive entity maxSpeed maxForce), (contain entity maxSpeed maxForce)]
+        frc  = [
+                --(seek entity maxSpeed maxForce),
+                (flow entity (flowfield state) maxSpeed maxForce),
+                (align entity (entities state) maxSpeed maxForce),
+                --(seperate entity (entities state) maxSpeed maxForce),
+                (contain entity maxSpeed maxForce), 
+                (drag (rad entity) (vel')),  
+                (friction (vel entity))
+                ]
         vel' = limit ((vel entity) `add` (acc entity)) (maxSpeed)
+        
+outputEntity :: EntityState -> IO()
+outputEntity e = putStrLn(show e)

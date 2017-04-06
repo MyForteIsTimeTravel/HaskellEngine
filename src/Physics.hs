@@ -59,8 +59,13 @@ wind :: Vector2D; wind = (1, 0)
 -- | the friction of a circle with 
 -- | the given velocity
 -------------------------------------
+
+-- Issue with arrive AI, spins sprite when resting
 friction :: Vector2D -> Vector2D
 friction vel = Linear.scale (Linear.normalize (Linear.scale (vel) (-1))) (fCo * fSurfNorm)
+
+-- test scale
+-- test normalize
 
 fCo :: Float; fCo = 0.01
 fSurfNorm :: Float; fSurfNorm = 1.0

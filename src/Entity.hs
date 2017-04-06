@@ -9,7 +9,9 @@
 module Entity (
     EntityState, 
     addEntity, 
+    entityAt,
     looseEntity, 
+    nearestEntities,
     pos, 
     vel, 
     acc, 
@@ -20,6 +22,8 @@ module Entity (
 ) where
 
 import Graphics.Gloss
+import Data.List
+import Data.Ord
 import Linear
 import Window
 
@@ -48,6 +52,21 @@ addEntity state size = state ++ [Entity {
     col = makeColor ((fromIntegral ((length state))) / fromIntegral size) 
                     ((fromIntegral ((length state))) / fromIntegral size) 
                     ((fromIntegral ((length state))) / fromIntegral size) (0.4)}]
+                    
+-------------------------------------
+-- | add a ball to the state's list 
+-- | of balls
+-------------------------------------              
+entityAt :: Vector2D -> EntityState
+entityAt loc = Entity {
+    pos = loc,
+    vel = (0, 0),
+    acc = (0, 0),
+    tgt = (0, 0),
+    rot = 0.0,
+    rad = 8,
+    col = makeColor (0.32) (0.32) (0.32) (0.5)
+}
 
 -------------------------------------
 -- | remove a ball from the state if
@@ -62,3 +81,12 @@ makePos state size = (
      (((fromIntegral ((length state))) / fromIntegral size) / fromIntegral width),  -- x
      (((fromIntegral ((length state))) / fromIntegral size) / fromIntegral height)  -- y
      )
+     
+-------------------------------------
+-- |  find the closest n entities 
+-------------------------------------  
+nearestEntities :: Int -> EntityState -> [EntityState] -> [EntityState]
+nearestEntities n entity world = take n (sortBy (nearest (pos entity)) world)
+    where 
+        nearest :: Vector2D -> EntityState -> EntityState -> Ordering
+        nearest point lhs rhs = compare (distance (pos lhs) point) (distance (pos rhs) point)

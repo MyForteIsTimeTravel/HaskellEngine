@@ -9,6 +9,7 @@
 module UI (label, title, dotdotdot) where
 
 import Graphics.Gloss
+import Window
 import Linear
 
 -----------------------------------------
@@ -23,7 +24,7 @@ dotdotdot tick = take (1 + (round ((tick * 4)) `mod` 6)) (repeat '.')
 label :: [Char] -> Vector2D -> Picture
 label s pos = 
     Translate (x pos) (y pos) $ 
-    Scale     (0.12)  (0.12)  $ 
+    Scale     (fromIntegral (width) * 0.0001)  (fromIntegral (height) * 0.00016)  $ 
     Color     (dark white)    $
     Text      (s)
 -----------------------------------------
@@ -33,6 +34,6 @@ label s pos =
 title :: [Char] -> Vector2D -> Picture
 title s pos = 
     Translate (x pos) (y pos) $ 
-    Scale     (0.14) (0.14)   $ 
+    Scale     (fromIntegral (width) * 0.00016)  (fromIntegral (height) * 0.00022)   $ 
     Color     (black)         $
     Text      (s)

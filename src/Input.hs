@@ -28,14 +28,17 @@ handle (EventKey (Char 'x') ks _ _) state = increase state
 handle (EventKey (Char 'z') ks _ _) state = decrease state
 
 -- | on mouse click, blast a force through the simulation
-handle (EventKey (MouseButton leftButton) bs _ pos) state = 
+handle (EventKey (MouseButton rightButton) bs _ pos) state = 
     state { entities = if bs == Down then map (mouseImpulse pos 256) (entities state) else (entities state) }
+
+--handle (EventKey (MouseButton leftButton) bs _ pos) state = 
+--    state { entities = (entities state) ++ mouseSpawn pos }
 
 -- | blast impulse from mouse as it moves across the screen
 handle (EventMotion pos) state = 
-    -- state { paused = (paused state), tick = (tick state), actors = map (mouseAttraction pos 56) (actors state) }
-    state { paused = (paused state), tick = (tick state), entities = map (mouseSeek pos) (entities state) }
-
+    if onScreen pos then state { entities = map (mouseSeek pos) (entities state) }
+    else state
+    
 -- | default, don't do anything
 handle _ state = state
 
@@ -52,3 +55,7 @@ mouseAttraction origin range entity =
 -- | seek steer towards mouse
 mouseSeek :: Vector2D -> EntityState -> EntityState
 mouseSeek mouse entity = entity { tgt = mouse }
+
+-- | spawn an entity on a mouse click
+mouseSpawn :: Vector2D -> [EntityState]
+mouseSpawn mouse = [entityAt mouse]

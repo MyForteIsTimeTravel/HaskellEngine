@@ -13,6 +13,7 @@ module Rendering (render) where
 -----------------------------------------
 
 import Graphics.Gloss
+import FlowField
 import Simulation
 import Collision
 import Geometry
@@ -25,13 +26,45 @@ import UI
 -- | render UI and actors
 -----------------------------------------
 render :: GameState -> Picture
-render state = pictures ((renderEntities (entities state)) ++ [uiBackground, status, entityCount, simulationTick, collisionCount])
+render state = pictures (
+               [(visualize (flowfield state))] ++ 
+               (renderEntities (entities state)) ++ 
+               (simulationDebug state)           ++ 
+               (entityDebug (head (entities state))))
+
+entityDebug :: EntityState -> [Picture]
+entityDebug entity = [uiBackground, p, v, a, t, r]
+    where
+        uiBackground =
+            Translate (-0.39 * fromIntegral width) (-0.195 * fromIntegral height) $ 
+            Scale     (0.2 * fromIntegral width) (0.1 * fromIntegral height) $ 
+            Color     (makeColor (0.32) (0.32) (0.32) (0.8)) $
+            polygon   rectangleGeometry
+        p = label
+            ("position : : " ++ show (pos entity))
+            ((-0.480 * fromIntegral width), (-0.260 * fromIntegral height))
+        v = label
+            ("velocity : : " ++ show (vel entity))
+            ((-0.480 * fromIntegral width), (-0.230 * fromIntegral height))
+        a = label
+            ("acceleration : : " ++ show (acc entity))
+            ((-0.480 * fromIntegral width), (-0.200 * fromIntegral height))
+        t = label
+            ("target : : " ++ show (tgt entity))
+            ((-0.480 * fromIntegral width), (-0.170 * fromIntegral height))
+        r = label
+            ("rotation : : " ++ show (rot entity))
+            ((-0.480 * fromIntegral width), (-0.140 * fromIntegral height))
+
+
+simulationDebug :: GameState -> [Picture]
+simulationDebug state = [uiBackground, status, entityCount, simulationTick, collisionCount]
     where 
         uiBackground = -- transparent black backboard
             Translate (-0.39 * fromIntegral width) (-0.39 * fromIntegral height) $ 
             Scale     (0.2 * fromIntegral width) (0.08 * fromIntegral height) $ 
             Color     (makeColor (0.32) (0.32) (0.32) (0.8)) $
-            polygon   rect
+            polygon   rectangleGeometry
             
         entityCount = label
             ("entities : : " ++ show (length (entities state)))
@@ -49,11 +82,12 @@ render state = pictures ((renderEntities (entities state)) ++ [uiBackground, sta
             (if (paused state) then "PAUSED" else ("RUNNING" ++ dotdotdot (tick state)))
             ((-0.480 * fromIntegral width), (-0.350 * fromIntegral height))
             
+            
 -----------------------------------------
 -- | render actors, plural
 -----------------------------------------
 renderEntities :: [EntityState] -> [Picture]
-renderEntities state = concat (map renderBox state)
+renderEntities state = concat (map renderArrow state)
 -----------------------------------------
 -- | render actor as ball
 -----------------------------------------
@@ -83,7 +117,7 @@ renderBox box = [sprite, direction]
             Color     (makeColor (0.32) (0.32) (0.32) (0.8))  $
             Rotate    (-toDegrees (heading (vel box))) $
             Scale     (8) (4) $
-            polygon   rect
+            polygon   rectangleGeometry
         direction =
             Translate (x (pos box)) (y (pos box)) $
             Color     (white) $
@@ -99,24 +133,17 @@ renderTri t = [sprite]
             Color     (makeColor (0.32) (0.32) (0.32) (0.8))  $
             Rotate    (-(toDegrees (heading (vel t)) - 90)) $
             Scale     (10) (20) $
-            polygon   tri
+            polygon   triangleGeometry
             
 -----------------------------------------
 -- | render actor as an arrow of its velocity
 -----------------------------------------
 renderArrow :: EntityState -> [Picture]
-renderArrow t = [tip, body]
+renderArrow t = [sprite]
     where
-        tip =
+        sprite =
             Translate (x (pos t)) (y (pos t)) $
             Color     (makeColor (0.32) (0.32) (0.32) (0.8))  $
-            Rotate    (-(toDegrees (heading (vel t)) - 90)) $
-            Scale     (8) (16) $
-            polygon   tri
-        body = 
-            Translate (x (pos t)) (y (pos t)) $
-            Color     (makeColor (0.32) (0.32) (0.32) (0.8))  $
-            Rotate    (-toDegrees (heading (vel t))) $
-            Scale     (16) (2) $
-            Translate (-1) (0) $
-            polygon   rect
+            Rotate    (-(toDegrees (heading (vel t)))) $
+            Scale     (20) (20) $
+            polygon   arrowGeometry

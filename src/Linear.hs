@@ -24,7 +24,8 @@ module Linear (
     toDegrees, 
     toRadians,
     toArray,
-    rangeMap
+    rangeMap,
+    average
 ) where
 
 -----------------------------------------
@@ -137,3 +138,10 @@ dot :: Vector2D -> Vector2D -> Float
 dot a b = foldr (+) 0 (map multiply (zip (toArray a) (toArray b)))
     where multiply :: (Float, Float) -> Float 
           multiply a = (x a) * (y a)
+          
+-----------------------------------------
+-- | average vector
+-----------------------------------------
+average :: [Vector2D] -> Vector2D
+average []   = (0.0, 0.0)
+average vecs = (foldl (add) (0, 0) (vecs)) `divide` fromIntegral (length vecs)
