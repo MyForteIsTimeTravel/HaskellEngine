@@ -25,13 +25,13 @@ import Input
 -- | detection on engine state
 -------------------------------------
 update :: Float -> GameState -> GameState
-update sec state = state { 
-    tick = if not (paused state) then (tick state) + 0.01 
-           else (tick state),
-           
-    entities = if not (paused state) then checkCollisions (advance sec state (entities state)) 
-    else (entities state)
-}
+update sec state 
+    |     (paused state) = state
+    | not (paused state) = state { 
+            tick      = (tick state) + 0.01, 
+            entities  = checkCollisions (advance sec state (entities state)),
+            interface = makeInterface state
+        }
 
 -------------------------------------
 -- | main

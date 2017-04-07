@@ -27,62 +27,57 @@ import UI
 -----------------------------------------
 render :: GameState -> Picture
 render state = pictures (
-               [(visualize (flowfield state))] ++ 
+              -- [(visualize (flowfield state))]   ++ 
                (renderEntities (entities state)) ++ 
-               (simulationDebug state)           ++ 
-               (entityDebug (head (entities state))))
+               (renderInterface (state)))
 
-entityDebug :: EntityState -> [Picture]
-entityDebug entity = [uiBackground, p, v, a, t, r]
-    where
-        uiBackground =
-            Translate (-0.39 * fromIntegral width) (-0.195 * fromIntegral height) $ 
-            Scale     (0.2 * fromIntegral width) (0.1 * fromIntegral height) $ 
-            Color     (makeColor (0.32) (0.32) (0.32) (0.8)) $
-            polygon   rectangleGeometry
-        p = label
-            ("position : : " ++ show (pos entity))
-            ((-0.480 * fromIntegral width), (-0.260 * fromIntegral height))
-        v = label
-            ("velocity : : " ++ show (vel entity))
-            ((-0.480 * fromIntegral width), (-0.230 * fromIntegral height))
-        a = label
-            ("acceleration : : " ++ show (acc entity))
-            ((-0.480 * fromIntegral width), (-0.200 * fromIntegral height))
-        t = label
-            ("target : : " ++ show (tgt entity))
-            ((-0.480 * fromIntegral width), (-0.170 * fromIntegral height))
-        r = label
-            ("rotation : : " ++ show (rot entity))
-            ((-0.480 * fromIntegral width), (-0.140 * fromIntegral height))
+-----------------------------------------
+-- | renders the interface for the state
+-----------------------------------------
+renderInterface :: GameState -> [Picture]
+renderInterface state = traverseInterface (interface state)
 
+-----------------------------------------
+-- | traverses a list of UINodes and renders
+-- | each.
+-----------------------------------------
+traverseInterface :: [UINode] -> [Picture]
+traverseInterface []     = []
+traverseInterface [x]    = (renderNode x)
+traverseInterface (x:xs) = (renderNode x) ++ (traverseInterface xs)
 
-simulationDebug :: GameState -> [Picture]
-simulationDebug state = [uiBackground, status, entityCount, simulationTick, collisionCount]
-    where 
-        uiBackground = -- transparent black backboard
-            Translate (-0.39 * fromIntegral width) (-0.39 * fromIntegral height) $ 
-            Scale     (0.2 * fromIntegral width) (0.08 * fromIntegral height) $ 
-            Color     (makeColor (0.32) (0.32) (0.32) (0.8)) $
-            polygon   rectangleGeometry
-            
-        entityCount = label
-            ("entities : : " ++ show (length (entities state)))
-            ((-0.480 * fromIntegral width), (-0.440 * fromIntegral height))
-            
-        collisionCount = label
-            ("Collisions : : " ++ show (countCollisions (entities state)))
-            ((-0.480 * fromIntegral width), (-0.410 * fromIntegral height))
-            
-        simulationTick = label
-            ("simulation tick : : " ++ show (tick state))
-            ((-0.480 * fromIntegral width), (-0.380 * fromIntegral height))
-            
-        status = title
-            (if (paused state) then "PAUSED" else ("RUNNING" ++ dotdotdot (tick state)))
-            ((-0.480 * fromIntegral width), (-0.350 * fromIntegral height))
-            
-            
+-----------------------------------------
+-- | renders a single node
+-----------------------------------------
+renderNode :: UINode -> [Picture]
+renderNode n = [background, pictures (elements)]
+    where background =
+               Translate (x (uipos n)) (y (uipos n)) $ 
+               Scale     (w (size n)) (h (size n)) $ 
+               Color     (makeColor (0.32) (0.32) (0.32) (0.8)) $
+               polygon   rectangleGeometry
+           elements = (renderElements (elm n))
+
+-----------------------------------------
+-- | renders a list of elements
+-----------------------------------------
+renderElements :: [UIElement] -> [Picture]
+renderElements []     = []
+renderElements [x]    = [renderTitle x]
+renderElements (x:xs) = [renderElement x] ++ renderElements xs
+
+-----------------------------------------
+-- | renders a non-title element
+-----------------------------------------
+renderElement :: UIElement -> Picture
+renderElement e = label (txt e) (loc e)
+ 
+ -----------------------------------------
+-- | renders a title element
+-----------------------------------------
+renderTitle :: UIElement -> Picture
+renderTitle t = title (txt t) (loc t)
+
 -----------------------------------------
 -- | render actors, plural
 -----------------------------------------
@@ -134,7 +129,6 @@ renderTri t = [sprite]
             Rotate    (-(toDegrees (heading (vel t)) - 90)) $
             Scale     (10) (20) $
             polygon   triangleGeometry
-            
 -----------------------------------------
 -- | render actor as an arrow of its velocity
 -----------------------------------------

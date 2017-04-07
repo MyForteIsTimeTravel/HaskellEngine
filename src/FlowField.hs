@@ -55,7 +55,7 @@ addPoint w h = Point { pos = pos',  dir = dir' }
     where
         pos' = (bottomLeftX + (fromIntegral ((width `div` resX) * w)), bottomY + (fromIntegral ((height `div` resY) * h)))
         --dir' = (0, 0) `sub` pos'
-        dir' = (0, 1)
+        dir' = (1, 1)
 -----------------------------------------
 -- | return the flow at the given location
 -----------------------------------------

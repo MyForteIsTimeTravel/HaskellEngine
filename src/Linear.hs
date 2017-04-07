@@ -10,6 +10,7 @@ module Linear (
     x, y,
     r, g, 
     u, v,
+    w, h,
     Vector2D,
     add, sub, 
     divide, scale, 
@@ -35,7 +36,7 @@ type Vector2D = (Float, Float)
 x :: Vector2D -> Float; x vec = fst vec; y :: Vector2D -> Float; y vec = snd vec
 r :: Vector2D -> Float; r vec = fst vec; g :: Vector2D -> Float; g vec = snd vec
 u :: Vector2D -> Float; u vec = fst vec; v :: Vector2D -> Float; v vec = snd vec
-
+w :: Vector2D -> Float; w vec = fst vec; h :: Vector2D -> Float; h vec = snd vec
 -----------------------------------------
 -- | Conversion
 -----------------------------------------

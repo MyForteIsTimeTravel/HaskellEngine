@@ -64,7 +64,7 @@ entityAt loc = Entity {
     acc = (0, 0),
     tgt = (0, 0),
     rot = 0.0,
-    rad = 8,
+    rad = 0,
     col = makeColor (0.32) (0.32) (0.32) (0.5)
 }
 
